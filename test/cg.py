@@ -1,9 +1,9 @@
 import unittest
 import numpy as np
 
-from scipy.sparse.linalg import LinearOperator
-import scipy.sparse.linalg as lin
-from numalg.poisson import cg, A
+from numalg.laplacian import L
+from numalg.cg import cg
+
 
 
 class TestCase1(unittest.TestCase):
@@ -42,7 +42,7 @@ class TestCase1(unittest.TestCase):
             rhs = self.get_rhs(N)
             U_sol = self.get_u(N)
             U_0 = np.random.rand(N + 1, N + 1)
-            U_num = cg(A, U_0, rhs=rhs, N=N, tol=2 / N ** 1.5)
+            U_num = cg(L, U_0, rhs=rhs, N=N, tol=2 / N ** 1.5)
             DU = U_num - U_sol
             self.assertAlmostEqual(np.max(np.abs(DU)), 0, delta=0.1)
 
