@@ -5,7 +5,6 @@ from numalg.laplacian import L
 from numalg.cg import cg
 
 
-
 class TestCase1(unittest.TestCase):
     @staticmethod
     def get_f(N):

@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def cg(A, u_0, rhs, N, tol):
     """Solving -Lu*h**2 = f*h**2*1(interior) + g*boundary()
 

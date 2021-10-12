@@ -2,7 +2,7 @@ import numpy as np
 
 
 def L(u, N):
-    """Compute negative discrete laplacian times h**2 + id on the boundaryt """
+    """Compute negative discrete laplacian times h**2 + id on the boundaryt"""
     index = np.arange(1, N)
     ixy = np.ix_(index, index)
     ixm_y = np.ix_(index - 1, index)
@@ -16,5 +16,3 @@ def L(u, N):
     # - \delta
     Lu[ixy] = -(u[ixm_y] + u[ixp_y] + u[ix_ym] + u[ix_yp]) + 4 * u[ixy]
     return Lu
-
-
