@@ -1,15 +1,15 @@
 import numpy as np
 
 
-def cg(A, u_0, rhs, N, tol):
+def cg(A, x_0, rhs, N, tol=1e-5, maxiter=None):
     """Solving -Lu*h**2 = f*h**2*1(interior) + g*boundary()
 
     Assuming all numbers are real
     """
 
-    r = rhs - A(u_0, N)
+    r = rhs - A(x_0, N)
     p = r
-    u = u_0
+    u = x_0
     r_dot_r_0 = np.tensordot(r, r, 2)  # two norm **2
     r_dot_r = r_dot_r_0
     i = 0
@@ -28,5 +28,18 @@ def cg(A, u_0, rhs, N, tol):
 
         # update for iteration
         r_dot_r = r_dot_r_new
+
         i += 1
+        if maxiter is not None and i > maxiter:
+            break
     return u
+
+
+def weighted_jacobi(x_0, rhs, N, w, nu, J_w: callable, D_inv):
+    """Perform weighted jacobi iteration"""
+    f_w = w * D_inv(rhs, N=N)
+    x = x_0
+    for _ in range(nu):
+        x = J_w(x,N, w) + f_w
+
+    return x
