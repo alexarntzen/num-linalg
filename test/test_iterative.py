@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-import case_one as c1
+import test.case_one as c1
 
 from numalg.laplacian import L, D_inv, J_w
 from numalg.iterative import cg, weighted_jacobi
@@ -22,7 +22,7 @@ class TestIterCaseOne(unittest.TestCase):
             self.assertAlmostEqual(np.max(np.abs(DU)), 0, delta=0.1)
 
     def test_weighted_jacobi(self):
-        print("Jacobi:")
+        print("\nJacobi:")
         for N in [32, 64, 128]:
 
             rhs = c1.get_rhs(N)
