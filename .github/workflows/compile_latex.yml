@@ -27,7 +27,7 @@ jobs:
           files: "report/main.tex"
       - name: setup python
         uses: actions/setup-python@v2
-        if: check_latex.steps.check_report.outputs.files_exists == 'true'
+        if: steps.check_report.outputs.files_exists == 'true'
         with:
           python-version: 3.8
       - name: Install dependencies
