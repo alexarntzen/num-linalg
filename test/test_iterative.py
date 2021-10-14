@@ -36,7 +36,7 @@ class TestCase1(unittest.TestCase):
         return rhs
 
     def test_cg(self):
-        print("\ncg:" )
+        print("\ncg:")
         for N in [32, 64, 128]:
 
             rhs = self.get_rhs(N)
@@ -48,13 +48,15 @@ class TestCase1(unittest.TestCase):
             print(f"\ndetla_{N}: {np.max(np.abs(DU))}")
 
     def test_weighted_jacobi(self):
-        print("\nJacobi:" )
+        print("\nJacobi:")
         for N in [32, 64, 128]:
 
             rhs = self.get_rhs(N)
             U_sol = self.get_u(N)
             U_0 = np.random.rand(N + 1, N + 1)
-            U_num = weighted_jacobi(U_0, rhs, N, w=2/3, nu=25*N, J_w=J_w,D_inv=D_inv)
+            U_num = weighted_jacobi(
+                U_0, rhs, N, w=2 / 3, nu=25 * N, J_w=J_w, D_inv=D_inv
+            )
             DU = U_num - U_sol
             self.assertAlmostEqual(np.max(np.abs(DU)), 0, delta=0.5)
             print(f"\ndetla_{N}: {np.max(np.abs(DU))}")

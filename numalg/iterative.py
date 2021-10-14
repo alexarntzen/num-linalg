@@ -40,6 +40,6 @@ def weighted_jacobi(x_0, rhs, N, w, nu, J_w: callable, D_inv):
     f_w = w * D_inv(rhs, N=N)
     x = x_0
     for _ in range(nu):
-        x = J_w(x,N, w) + f_w
+        x = J_w(x, N, w) + f_w
 
     return x
