@@ -1,9 +1,9 @@
 import numpy as np
 from numalg.iterative import cg, weighted_jacobi
-from numalg.laplacian import D_inv, J_w
+from numalg.laplacian import L, D_inv, J_w
 
 
-def mgv_poisson(u_0, rhs, N, nu1, nu2, level, max_level: int, A: callable):
+def mgv_poisson(u_0, rhs, N, nu1, nu2, level, max_level: int):
     """
     the fucntion performs the function mgv(u0,rhs,N,nu1,nu2,level,max_level) performs
     one multigrid V-cycle on the 2D Poisson problem on the unit
@@ -16,32 +16,34 @@ def mgv_poisson(u_0, rhs, N, nu1, nu2, level, max_level: int, A: callable):
          nu2       - number of postsmoothings
          level     - current level
          max_level - total number of levels"""
+    u = u_0
     assert (
-        N % 2 ** max_level == 0
+        N % 2 ** (max_level - level) == 0
     ), "Number of grid nodes along each axis is not divisable by 2**max_level"
     if level == max_level:
-        u = cg(u_0, rhs, N, 1e-13, 500)
+        u = cg(A=L, x_0=u, rhs=rhs, N=N, tol=1e-13, maxiter=500)
     else:
-        u = weighted_jacobi(u_0, rhs, w=2 / 3, N=N, nu=nu1, J_w=J_w, D_inv=D_inv)
-        rf = A(u) - rhs  # compute residual
-        rc = restriction(rf, N)  # restriction
-        ec = mgv_poisson(
+        u= weighted_jacobi(x_0=u, rhs=rhs, w=2 / 3, N=N, nu=nu1, J_w=J_w, D_inv=D_inv)
+        r_h = L(u, N) - rhs  # compute residual
+        r_2h = restriction(r_h, N)  # restriction
+        e_2h = mgv_poisson(
             np.zeros((N // 2 + 1, N // 2 + 1)),
-            rc,
+            r_2h,
             N // 2,
             nu1,
             nu2,
             level + 1,
             max_level,
         )
-        ef = interpolation(ec, int(N / 2))
-        u = u + ef
-        u = weighted_jacobi(u_0, rhs, w=2 / 3, N=N, nu=nu2, J_w=J_w, D_inv=D_inv)
+        e_h = interpolation(e_2h, int(N / 2))
+        u = u + e_h
+        u = weighted_jacobi(x_0=u, rhs=rhs, w=2 / 3, N=N, nu=nu2, J_w=J_w, D_inv=D_inv)
     return u
 
 
 def restriction(v_h, N):
-
+    assert N % 2 == 0
+    "N must be even"
     index_h = np.arange(2, N, 2)
     index_2h = np.arange(1, N // 2)
 

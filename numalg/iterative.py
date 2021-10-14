@@ -32,13 +32,14 @@ def cg(A, x_0, rhs, N, tol=1e-5, maxiter=None):
         i += 1
         if maxiter is not None and i > maxiter:
             break
+    # print("res: ",  r_dot_r / r_dot_r_0)
     return u
 
 
 def weighted_jacobi(x_0, rhs, N, w, nu, J_w: callable, D_inv):
     """Perform weighted jacobi iteration"""
     f_w = w * D_inv(rhs, N=N)
-    x = x_0
+    x = x_0 # so we do not change x0
     for _ in range(nu):
         x = J_w(x, N, w) + f_w
 
