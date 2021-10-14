@@ -24,7 +24,8 @@ def J_w(u, N, w):
 
 def D_inv(u, N):
     """D is diagonal of the discrete laplacian above. Compute D^-1(u) for a given."""
+    u_new = u.copy()
     index = np.arange(1, N)
     ixy = np.ix_(index, index)
-    u[ixy] = u[ixy] / 4
-    return u
+    u_new[ixy] = u[ixy] / 4
+    return u_new
