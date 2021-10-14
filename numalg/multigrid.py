@@ -23,7 +23,7 @@ def mgv_poisson(u_0, rhs, N, nu1, nu2, level, max_level: int):
     if level == max_level:
         u = cg(A=L, x_0=u, rhs=rhs, N=N, tol=1e-13, maxiter=500)
     else:
-        u= weighted_jacobi(x_0=u, rhs=rhs, w=2 / 3, N=N, nu=nu1, J_w=J_w, D_inv=D_inv)
+        u = weighted_jacobi(x_0=u, rhs=rhs, w=2 / 3, N=N, nu=nu1, J_w=J_w, D_inv=D_inv)
         r_h = L(u, N) - rhs  # compute residual
         r_2h = restriction(r_h, N)  # restriction
         e_2h = mgv_poisson(

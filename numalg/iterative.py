@@ -39,7 +39,7 @@ def cg(A, x_0, rhs, N, tol=1e-5, maxiter=None):
 def weighted_jacobi(x_0, rhs, N, w, nu, J_w: callable, D_inv):
     """Perform weighted jacobi iteration"""
     f_w = w * D_inv(rhs, N=N)
-    x = x_0 # so we do not change x0
+    x = x_0  # so we do not change x0
     for _ in range(nu):
         x = J_w(x, N, w) + f_w
 
