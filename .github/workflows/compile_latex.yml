@@ -31,22 +31,22 @@ jobs:
         with:
           python-version: 3.8
       - name: Install dependencies
-        if: check_latex.steps.check_report.outputs.files_exists == 'true'
+        if: steps.check_report.outputs.files_exists == 'true'
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Test with unittest discover
-        if: check_latex.steps.check_report.outputs.files_exists == 'true'
+        if: steps.check_report.outputs.files_exists == 'true'
         run: |
           python -m unittest
       - name: Compile LaTeX document
-        if: check_latex.steps.check_report.outputs.files_exists == 'true'
+        if: steps.check_report.outputs.files_exists == 'true'
         uses: dante-ev/latex-action@v0.2.0
         with:
           working_directory: report
           root_file: main.tex
       - uses: actions/upload-artifact@v2
-        if: check_latex.steps.check_report.outputs.files_exists == 'true'
+        if: steps.check_report.outputs.files_exists == 'true'
         with:
           name: compiled_document.pdf
           path: report/main.pdf
