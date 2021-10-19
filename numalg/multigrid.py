@@ -1,9 +1,26 @@
 import numpy as np
 from numalg.iterative import cg, weighted_jacobi
-from numalg.laplacian import L, D_inv, J_w
+from numalg.laplacian import minus_laplace, D_inv, J_w
 
 
-def mgv_poisson(u_0, rhs, N, nu1, nu2, level, max_level: int):
+def multigrid_minus_poisson(
+    u_0, rhs, N, nu1, nu2, level, max_level: int, tol=1e-13, maxiter=500
+):
+    """multigrid with multiple v-sycles"""
+
+    u = u_0
+    res_0 = np.linalg.norm(rhs - minus_laplace(u, N), ord="fro")
+    res = res_0
+    i = 0
+    while res / res_0 >= tol:
+        u = mgv_minus_poisson(u, rhs, N, nu1, nu2, level, max_level)
+        if maxiter is not None and i > maxiter:
+            break
+        res = np.linalg.norm(rhs - minus_laplace(u, N), ord="fro")
+    return u
+
+
+def mgv_minus_poisson(u_0, rhs, N, nu1, nu2, level, max_level: int):
     """
     the fucntion performs the function mgv(u0,rhs,N,nu1,nu2,level,max_level) performs
     one multigrid V-cycle on the 2D Poisson problem on the unit
@@ -21,12 +38,12 @@ def mgv_poisson(u_0, rhs, N, nu1, nu2, level, max_level: int):
         N % 2 ** (max_level - level) == 0
     ), "Number of grid nodes along each axis is not divisable by 2**max_level"
     if level == max_level:
-        u = cg(A=L, x_0=u, rhs=rhs, N=N, tol=1e-13, maxiter=500)
+        u = cg(A=minus_laplace, x_0=u, rhs=rhs, N=N, tol=1e-13, maxiter=500)
     else:
         u = weighted_jacobi(x_0=u, rhs=rhs, w=2 / 3, N=N, nu=nu1, J_w=J_w, D_inv=D_inv)
-        r_h = L(u, N) - rhs  # compute residual
+        r_h = rhs - minus_laplace(u, N)  # compute residual
         r_2h = restriction(r_h, N)  # restriction
-        e_2h = mgv_poisson(
+        e_2h = mgv_minus_poisson(
             np.zeros((N // 2 + 1, N // 2 + 1)),
             r_2h,
             N // 2,
@@ -65,7 +82,6 @@ def restriction(v_h, N):
 
 
 def interpolation(v_2h, N):
-
     # include one extra row to accomodate the stencil
     v_h_extra = np.zeros((2 * N + 3, 2 * N + 3))
     index_extra = np.arange(1, 2 * N + 2)

@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def L(u, N):
+def minus_laplace(u, N):
     """Compute negative discrete laplacian times h**2 + id on the boundry"""
     index = np.arange(1, N)
     ixy = np.ix_(index, index)
@@ -19,11 +19,12 @@ def L(u, N):
 
 
 def J_w(u, N, w):
-    return u - w * D_inv(L(u, N), N)
+    return u - w * D_inv(minus_laplace(u, N), N)
 
 
 def D_inv(u, N):
-    """D is diagonal of the discrete laplacian above. Compute D^-1(u) for a given."""
+    """D is diagonal of the negative discrete laplacian above.
+    Compute D^-1(u) for a given."""
     u_new = u.copy()
     index = np.arange(1, N)
     ixy = np.ix_(index, index)
