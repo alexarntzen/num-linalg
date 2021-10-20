@@ -4,7 +4,7 @@ from numalg.laplacian import minus_laplace, D_inv, J_w
 
 
 def multigrid_minus_poisson(
-    u_0, rhs, N, nu1, nu2, level, max_level: int, tol=1e-13, maxiter=500
+    u_0, rhs, N, nu1, nu2, level=0, max_level: int = 1, tol=1e-13, maxiter=500
 ):
     """multigrid with multiple v-sycles"""
 

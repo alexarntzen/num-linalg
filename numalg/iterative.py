@@ -1,11 +1,8 @@
 import numpy as np
 
 
-def cg(A, x_0, rhs, N, tol=1e-5, maxiter=None):
-    """Solving -Lu*h**2 = f*h**2*1(interior) + g*boundary()
-
-    Assuming all numbers are real
-    """
+def cg(A: callable, x_0, rhs, N: int, tol=1e-5, maxiter=None):
+    """Assuming all numbers are real"""
 
     r = rhs - A(x_0, N)
     p = r
