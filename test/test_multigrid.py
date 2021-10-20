@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from numalg.multigrid import interpolation, restriction
+from linalg.multigrid import interpolation, restriction
 
 
 class TestResInt(unittest.TestCase):

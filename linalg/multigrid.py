@@ -1,10 +1,19 @@
 import numpy as np
-from numalg.iterative import cg, weighted_jacobi
-from numalg.laplacian import minus_laplace, D_inv, J_w
+from linalg.iterative import cg, weighted_jacobi
+from linalg.laplacian import minus_laplace, D_inv, J_w
 
 
 def multigrid_minus_poisson(
-    u_0, rhs, N, nu1, nu2, level=0, max_level: int = 1, tol=1e-13, maxiter=500
+    u_0,
+    rhs,
+    N,
+    nu1,
+    nu2,
+    level=0,
+    max_level: int = 1,
+    tol=1e-13,
+    maxiter=None,
+    conv_hist=False,
 ):
     """multigrid with multiple v-sycles"""
 
@@ -12,12 +21,19 @@ def multigrid_minus_poisson(
     res_0 = np.linalg.norm(rhs - minus_laplace(u, N), ord="fro")
     res = res_0
     i = 0
+    hist = list()
     while res / res_0 >= tol:
         u = mgv_minus_poisson(u, rhs, N, nu1, nu2, level, max_level)
+        i += 1
         if maxiter is not None and i > maxiter:
             break
         res = np.linalg.norm(rhs - minus_laplace(u, N), ord="fro")
-    return u
+        if conv_hist:
+            hist.append(res)
+    if conv_hist:
+        return u, hist
+    else:
+        return u
 
 
 def mgv_minus_poisson(u_0, rhs, N, nu1, nu2, level, max_level: int):

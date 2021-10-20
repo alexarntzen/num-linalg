@@ -1,9 +1,9 @@
 import numpy as np
-from numalg.laplacian import minus_laplace
-from numalg.multigrid import mgv_minus_poisson
+from linalg.laplacian import minus_laplace
+from linalg.multigrid import mgv_minus_poisson
 
 
-def mgv_conditioned_cg_minus_possion(
+def mgv_conditioned_cg_minus_poisson(
     x_0, rhs, N, nu1, nu2, max_level, tol=1e-5, maxiter=None
 ):
     cond_kwargs = dict(

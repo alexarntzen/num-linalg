@@ -1,13 +1,13 @@
 import unittest
 import numpy as np
 
-import test.case_one as c1
-import test.case_two as c2
+from test.case_one import CaseOne
+from test.case_two import CaseTwo
 
-from numalg.laplacian import minus_laplace, D_inv, J_w
-from numalg.iterative import cg, weighted_jacobi
-from numalg.multigrid import mgv_minus_poisson, multigrid_minus_poisson
-from numalg.preconditioned import mgv_conditioned_cg_minus_possion
+from linalg.laplacian import minus_laplace, D_inv, J_w
+from linalg.iterative import cg, weighted_jacobi
+from linalg.multigrid import mgv_minus_poisson, multigrid_minus_poisson
+from linalg.preconditioned import mgv_conditioned_cg_minus_poisson
 
 
 class TestIterCaseOne(unittest.TestCase):
@@ -15,8 +15,8 @@ class TestIterCaseOne(unittest.TestCase):
         print("\ncg:")
         for N in [32, 64, 128]:
 
-            rhs = c1.get_rhs(N)
-            U_sol = c1.get_u(N)
+            rhs = CaseOne.get_rhs(N)
+            U_sol = CaseOne.get_u(N)
             U_0 = np.random.rand(N + 1, N + 1)
             U_num = cg(minus_laplace, U_0, rhs=rhs, N=N, tol=1e-5, maxiter=500)
             DU = U_num - U_sol
@@ -27,9 +27,9 @@ class TestIterCaseOne(unittest.TestCase):
         print("\nJacobi:")
         for N in [32, 64, 128]:
 
-            rhs = c1.get_rhs(N)
-            U_sol = c1.get_u(N)
-            U_0 = c1.get_u_0(N)
+            rhs = CaseOne.get_rhs(N)
+            U_sol = CaseOne.get_u(N)
+            U_0 = CaseOne.get_u_0(N)
             U_num = weighted_jacobi(
                 U_0, rhs, N, w=2 / 3, nu=25 * N, J_w=J_w, D_inv=D_inv
             )
@@ -41,9 +41,9 @@ class TestIterCaseOne(unittest.TestCase):
         print("\nMultigrid:")
         for N in [32, 64]:
 
-            rhs = c1.get_rhs(N)
-            U_sol = c1.get_u(N)
-            U_0 = c1.get_u_0(N)
+            rhs = CaseOne.get_rhs(N)
+            U_sol = CaseOne.get_u(N)
+            U_0 = CaseOne.get_u_0(N)
             U_num = mgv_minus_poisson(
                 U_0, rhs, N, nu1=2000, nu2=2000, level=0, max_level=2
             )
@@ -55,10 +55,10 @@ class TestIterCaseOne(unittest.TestCase):
         print("\nMultigrid preconditioned cg:")
         for N in [32, 64]:
 
-            rhs = c1.get_rhs(N)
-            U_sol = c1.get_u(N)
-            U_0 = c1.get_u_0(N)
-            U_num = mgv_conditioned_cg_minus_possion(
+            rhs = CaseOne.get_rhs(N)
+            U_sol = CaseOne.get_u(N)
+            U_0 = CaseOne.get_u_0(N)
+            U_num = mgv_conditioned_cg_minus_poisson(
                 U_0, rhs, N, nu1=2, nu2=2, max_level=2, tol=1e-5, maxiter=500
             )
             DU = U_num - U_sol
@@ -69,7 +69,7 @@ class TestIterCaseOne(unittest.TestCase):
 class TestResdiual(unittest.TestCase):
     def test_v_multigrid(self):
         print("\n1V-Multigrid:")
-        for case in [c1, c2]:
+        for case in [CaseOne, CaseTwo]:
             for N in [32, 64, 128]:
                 rhs = case.get_rhs(N)
                 U_0 = case.get_u_0(N)
@@ -82,7 +82,7 @@ class TestResdiual(unittest.TestCase):
 
     def test_multigrid(self):
         print("\nMultigrid:")
-        for case in [c1, c2]:
+        for case in [CaseOne, CaseTwo]:
             for N in [32, 64, 128]:
                 rhs = case.get_rhs(N)
                 U_0 = case.get_u_0(N)
@@ -95,11 +95,11 @@ class TestResdiual(unittest.TestCase):
 
     def test_multigrid_conditioned_cg(self):
         print("\nMultigrid:")
-        for case in [c1, c2]:
+        for case in [CaseOne, CaseTwo]:
             for N in [32, 64, 128]:
                 rhs = case.get_rhs(N)
                 U_0 = case.get_u_0(N)
-                U_num = mgv_conditioned_cg_minus_possion(
+                U_num = mgv_conditioned_cg_minus_poisson(
                     U_0, rhs, N, nu1=2, nu2=2, max_level=2, tol=1e-5, maxiter=500
                 )
                 res = rhs - minus_laplace(U_num, N)
