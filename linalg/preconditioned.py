@@ -9,18 +9,20 @@ def mgv_conditioned_cg_minus_poisson(
     N,
     nu1,
     nu2,
+    max_level,
     tol=1e-5,
     maxiter=None,
     conv_hist=False,
 ):
-
+    """Wrapper preconditioned conjugate gradient
+    that uses one multigrid V-cycle as preconditioner"""
     cond_kwargs = dict(
         x_0=np.zeros((N + 1, N + 1)),
         N=N,
         nu1=nu1,
         nu2=nu2,
-        level=1,
-        max_level=1,
+        level=0,
+        max_level=max_level,
     )
     return preconditioned_cg(
         A=neg_discrete_laplacian,
@@ -46,7 +48,9 @@ def preconditioned_cg(
     conv_hist=False,
     cond_kwargs=None,
 ):
-    """Solving -Lu*h**2 = f*h**2*1(interior) + g*boundary()
+    """
+    Modified conjugate gradient that uses the M operator as preconditioner
+    The M_inv operator is the function needed for this implementation
 
     Assuming all numbers are real
     """

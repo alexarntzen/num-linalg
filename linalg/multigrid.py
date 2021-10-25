@@ -15,7 +15,7 @@ def multigrid_minus_poisson(
     maxiter=None,
     conv_hist=False,
 ):
-    """Multigrid with multiple v-sycles"""
+    """Multigrid with multiple v-cycles"""
 
     x = x_0
     res_0 = np.linalg.norm(rhs - neg_discrete_laplacian(x, N), ord="fro")
@@ -38,7 +38,7 @@ def multigrid_minus_poisson(
 
 def mgv_minus_poisson(x_0, rhs, N, nu1, nu2, level=0, max_level=1):
     """
-    the fucntion performs the function mgv(u0,rhs,N,nu1,nu2,level,max_level) performs
+    the function mgv(u0,rhs,N,nu1,nu2,level,max_level) performs
     one multigrid V-cycle on the 2D Poisson problem on the unit
     square [0,1]x[0,1] with initial guess u0 and righthand side rhs.
 
@@ -52,7 +52,7 @@ def mgv_minus_poisson(x_0, rhs, N, nu1, nu2, level=0, max_level=1):
     x = x_0
     assert (
         N % 2 ** (max_level - level) == 0
-    ), "Number of grid nodes along each axis is not divisable by 2**max_level"
+    ), "Number of grid nodes along each axis is not divisible by 2**max_level"
     if level == max_level:
         x = cg(A=neg_discrete_laplacian, x_0=x, rhs=rhs, N=N, tol=1e-12, maxiter=500)
     else:
@@ -75,6 +75,9 @@ def mgv_minus_poisson(x_0, rhs, N, nu1, nu2, level=0, max_level=1):
 
 
 def restriction(v_h, N):
+    """Restriction operator for multigrid
+    Even indexed boundary values are preserved.
+    Interior points are restricted according to the full weighted stencil"""
     assert N % 2 == 0
     "N must be even"
     index_h = np.arange(2, N, 2)
@@ -98,7 +101,8 @@ def restriction(v_h, N):
 
 
 def interpolation(v_2h, N):
-    # include one extra row to accomodate the stencil
+    """Interpolation operator for multigrid"""
+    # This function includes one extra row to accommodate the stencil
     v_h_extra = np.zeros((2 * N + 3, 2 * N + 3))
     index_extra = np.arange(1, 2 * N + 2)
     index_extra_even = np.arange(1, 2 * N + 3, 2)

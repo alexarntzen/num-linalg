@@ -2,7 +2,7 @@ import numpy as np
 
 
 def neg_discrete_laplacian(u, N):
-    """Compute negative discrete laplacian times h**2 + id on the boundry"""
+    """Compute negative discrete laplacian times h**2,  id on the boundary"""
     index = np.arange(1, N)
     ixy = np.ix_(index, index)
     ixm_y = np.ix_(index - 1, index)
@@ -19,6 +19,7 @@ def neg_discrete_laplacian(u, N):
 
 
 def J_w(u, N, w):
+    """J_w, Used in jacobi iteratino"""
     return u - w * D_inv(neg_discrete_laplacian(u, N), N)
 
 

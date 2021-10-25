@@ -2,8 +2,9 @@ import numpy as np
 
 
 def cg(A: callable, x_0, rhs, N: int, tol=1e-12, maxiter=None, conv_hist=False):
-    """Assuming all numbers are real"""
+    """Implementation of conjugate gradient
 
+    Assuming all numbers are real"""
     r = rhs - A(x_0, N)
     p = r
     x = x_0
@@ -12,7 +13,6 @@ def cg(A: callable, x_0, rhs, N: int, tol=1e-12, maxiter=None, conv_hist=False):
     i = 0
     hist = list()
     while r_dot_r / r_dot_r_0 >= tol ** 2:
-        # this line fixes some wierd thing
         Ap = A(p, N)
         alpha = r_dot_r / np.sum(Ap * p)
         x = x + alpha * p
@@ -25,7 +25,7 @@ def cg(A: callable, x_0, rhs, N: int, tol=1e-12, maxiter=None, conv_hist=False):
         r_dot_r = r_dot_r_new
         i += 1
 
-        # restart the problem after 100 iterations
+        # restart the problem after N iterations and convergence not improving
         if i % N == 0 and beta > 0.98:
             r = p = rhs - A(x, N)
         # p[:,[0,N]] = 0
@@ -33,6 +33,7 @@ def cg(A: callable, x_0, rhs, N: int, tol=1e-12, maxiter=None, conv_hist=False):
             hist.append(np.sqrt(r_dot_r / r_dot_r_0))
         if maxiter is not None and i >= maxiter:
             break
+
     if conv_hist:
         return x, hist
     else:
