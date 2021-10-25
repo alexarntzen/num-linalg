@@ -1,10 +1,10 @@
 import numpy as np
 from linalg.iterative import cg, weighted_jacobi
-from linalg.laplacian import minus_laplace, D_inv, J_w
+from linalg.laplacian import neg_discrete_laplacian, D_inv, J_w
 
 
 def multigrid_minus_poisson(
-    u_0,
+    x_0,
     rhs,
     N,
     nu1,
@@ -15,28 +15,28 @@ def multigrid_minus_poisson(
     maxiter=None,
     conv_hist=False,
 ):
-    """multigrid with multiple v-sycles"""
+    """Multigrid with multiple v-sycles"""
 
-    u = u_0
-    res_0 = np.linalg.norm(rhs - minus_laplace(u, N), ord="fro")
+    x = x_0
+    res_0 = np.linalg.norm(rhs - neg_discrete_laplacian(x, N), ord="fro")
     res = res_0
     i = 0
     hist = list()
     while res / res_0 >= tol:
-        u = mgv_minus_poisson(u, rhs, N, nu1, nu2, level, max_level)
+        x = mgv_minus_poisson(x, rhs, N, nu1, nu2, level, max_level)
         i += 1
-        if maxiter is not None and i > maxiter:
+        if maxiter is not None and i >= maxiter:
             break
-        res = np.linalg.norm(rhs - minus_laplace(u, N), ord="fro")
+        res = np.linalg.norm(rhs - neg_discrete_laplacian(x, N), ord="fro")
         if conv_hist:
-            hist.append(res)
+            hist.append(res / res_0)
     if conv_hist:
-        return u, hist
+        return x, hist
     else:
-        return u
+        return x
 
 
-def mgv_minus_poisson(u_0, rhs, N, nu1, nu2, level, max_level: int):
+def mgv_minus_poisson(x_0, rhs, N, nu1, nu2, level=0, max_level=1):
     """
     the fucntion performs the function mgv(u0,rhs,N,nu1,nu2,level,max_level) performs
     one multigrid V-cycle on the 2D Poisson problem on the unit
@@ -49,15 +49,15 @@ def mgv_minus_poisson(u_0, rhs, N, nu1, nu2, level, max_level: int):
          nu2       - number of postsmoothings
          level     - current level
          max_level - total number of levels"""
-    u = u_0
+    x = x_0
     assert (
         N % 2 ** (max_level - level) == 0
     ), "Number of grid nodes along each axis is not divisable by 2**max_level"
     if level == max_level:
-        u = cg(A=minus_laplace, x_0=u, rhs=rhs, N=N, tol=1e-13, maxiter=500)
+        x = cg(A=neg_discrete_laplacian, x_0=x, rhs=rhs, N=N, tol=1e-12, maxiter=500)
     else:
-        u = weighted_jacobi(x_0=u, rhs=rhs, w=2 / 3, N=N, nu=nu1, J_w=J_w, D_inv=D_inv)
-        r_h = rhs - minus_laplace(u, N)  # compute residual
+        x = weighted_jacobi(x_0=x, rhs=rhs, w=2 / 3, N=N, nu=nu1, J_w=J_w, D_inv=D_inv)
+        r_h = rhs - neg_discrete_laplacian(x, N)  # compute residual
         r_2h = restriction(r_h, N)  # restriction
         e_2h = mgv_minus_poisson(
             np.zeros((N // 2 + 1, N // 2 + 1)),
@@ -69,9 +69,9 @@ def mgv_minus_poisson(u_0, rhs, N, nu1, nu2, level, max_level: int):
             max_level,
         )
         e_h = interpolation(e_2h, int(N / 2))
-        u = u + e_h
-        u = weighted_jacobi(x_0=u, rhs=rhs, w=2 / 3, N=N, nu=nu2, J_w=J_w, D_inv=D_inv)
-    return u
+        x = x + e_h
+        x = weighted_jacobi(x_0=x, rhs=rhs, w=2 / 3, N=N, nu=nu2, J_w=J_w, D_inv=D_inv)
+    return x
 
 
 def restriction(v_h, N):

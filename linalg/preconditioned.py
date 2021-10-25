@@ -1,56 +1,72 @@
 import numpy as np
-from linalg.laplacian import minus_laplace
+from linalg.laplacian import neg_discrete_laplacian
 from linalg.multigrid import mgv_minus_poisson
 
 
 def mgv_conditioned_cg_minus_poisson(
-    x_0, rhs, N, nu1, nu2, max_level, tol=1e-5, maxiter=None
+    x_0,
+    rhs,
+    N,
+    nu1,
+    nu2,
+    tol=1e-5,
+    maxiter=None,
+    conv_hist=False,
 ):
+
     cond_kwargs = dict(
-        u_0=np.zeros((N + 1, N + 1)),
+        x_0=np.zeros((N + 1, N + 1)),
         N=N,
         nu1=nu1,
         nu2=nu2,
         level=1,
-        max_level=max_level,
+        max_level=1,
     )
     return preconditioned_cg(
-        A=minus_laplace,
+        A=neg_discrete_laplacian,
         x_0=x_0,
         rhs=rhs,
         N=N,
         M_inv=mgv_minus_poisson,
-        cond_kwargs=cond_kwargs,
         tol=tol,
         maxiter=maxiter,
+        conv_hist=conv_hist,
+        cond_kwargs=cond_kwargs,
     )
 
 
 def preconditioned_cg(
-    A: callable, x_0, rhs, N: int, M_inv: callable, cond_kwargs, tol=1e-5, maxiter=None
+    A: callable,
+    x_0,
+    rhs,
+    N: int,
+    M_inv: callable,
+    tol=1e-12,
+    maxiter=None,
+    conv_hist=False,
+    cond_kwargs=None,
 ):
     """Solving -Lu*h**2 = f*h**2*1(interior) + g*boundary()
 
     Assuming all numbers are real
     """
-
+    if cond_kwargs is None:
+        cond_kwargs = dict()
     r = rhs - A(x_0, N)
     z = M_inv(rhs=r, **cond_kwargs)
     p = z
-    u = x_0
+    x = x_0
 
+    hist = list()
     r_dot_r_0 = np.tensordot(r, r, 2)  # two norm **2
     r_dot_r = r_dot_r_0
     r_dot_z = np.tensordot(r, z, 2)  # two norm **2
     i = 0
     while r_dot_r / r_dot_r_0 >= tol ** 2:
-        # if i % 100 == 0:
-        #     print(i, ((r_dot_r / r_dot_r_0) ** 0.5))
-
         Ap = A(p, N)
         alpha = r_dot_z / np.tensordot(Ap, p, 2)
 
-        u = u + alpha * p
+        x = x + alpha * p
         r = r - alpha * Ap
         z = M_inv(rhs=r, **cond_kwargs)
         r_dot_r_new = np.tensordot(r, r, 2)
@@ -63,7 +79,12 @@ def preconditioned_cg(
         r_dot_z = r_dot_z_new
 
         i += 1
+        if conv_hist:
+            hist.append(np.sqrt(r_dot_r / r_dot_r_0))
         if maxiter is not None and i > maxiter:
             break
         # print("res: ",  r_dot_r / r_dot_r_0)
-    return u
+    if conv_hist:
+        return x, hist
+    else:
+        return x

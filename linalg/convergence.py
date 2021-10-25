@@ -1,35 +1,68 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
 
-def get_data_of_N(method: callable, case, max_log_N=8, tol=1e-10, **method_kwargs):
-    N_list = np.zeros(max_log_N, dtype=np.int)
-    iters = np.zeros(max_log_N - 1)
-    final_res = np.zeros(max_log_N - 1)
-    for i in range(max_log_N - 1):
-        N = 2 ** (i + 2)
+def get_data_of_N(method: callable, case, N_list, tol=1e-12, **method_kwargs):
+    iters = np.zeros(len(N_list))
+    final_res = np.zeros(len(N_list))
+    for i, N in enumerate(N_list):
+        print(f"running for N={N}")
         rhs = case.get_rhs(N)
         x_0 = case.get_u_0(N)
-
-        _, res_hist = method(x_0=x_0, rhs=rhs, N=N, tol=tol, **method_kwargs)
-
+        _, conv_hist = method(
+            x_0=x_0, rhs=rhs, N=N, tol=tol, conv_hist=True, **method_kwargs
+        )
         N_list[i] = N
-        iters[i] = len(res_hist)
-        final_res[i] = res_hist[-1]
+        iters[i] = len(conv_hist)
+        final_res[i] = conv_hist[-1]
+        sys.stdout.flush()
     return N_list, iters, final_res
 
 
-def plot_convergence(
-    method: callable, case, n_list=[32, 64, 128], tol=1e-10, **method_kwargs
+def plot_first_iterations(
+    iterations, method, U_0, title="Result after i iterations", **method_kwargs
 ):
-    fig, ax = plt.subplots(1)
-    ax.set_ytit
-    for i, N in enumerate(n_list):
-        rhs = case.get_rhs(N)
-        x_0 = case.get_u_0(N)
-        _, res_hist = method(x_0=x_0, rhs=rhs, N=N, tol=tol, **method_kwargs)
-        iters = len(res_hist)
-        ax.pot(np.arange(iters), res_hist)
+    U_num = U_0
+    N = 2 ** iterations
+    fig, axs = plt.subplots(
+        ncols=iterations + 1, sharey=True, figsize=(iterations * 4, 5)
+    )
+    fig.suptitle(title)
+    for i in range(iterations + 1):
+        im = axs[i].imshow(U_num.T, origin="lower", extent=[0, 1, 0, 1], label=f"N={N}")
+        axs[0].set_ylabel("y")
+        axs[i].set_xlabel("x")
+        axs[i].set_title(f"Iterations: {i}")
+        U_num = method(U_num, **method_kwargs)
+    fig.colorbar(im, ax=axs, orientation="horizontal")
+    return fig
 
-    fig.show()
-    return
+
+def plot_convergence(method: callable, title="Convergence history", **method_kwargs):
+    fig_conv, axs_conv = plt.subplots(1, figsize=(10, 5))
+    u_num, conv_hist = method(conv_hist=True, **method_kwargs)
+    axs_conv.set_ylabel("Convergence criterion")
+    axs_conv.set_xlabel("Iterations")
+    fig_conv.suptitle(title)
+    axs_conv.semilogy(conv_hist)
+    return fig_conv
+
+
+def plot_convergence_iters_to_convergence(
+    method: callable,
+    case,
+    N_list,
+    tol=1e-12,
+    title="Iteratins to convergence",
+    **method_kwargs,
+):
+    N_list, iters, final_res = get_data_of_N(
+        method=method, case=case, N_list=N_list, tol=tol, **method_kwargs
+    )
+    fig_conv, axs_conv = plt.subplots(1, figsize=(10, 5))
+    axs_conv.set_ylabel("Iterations")
+    axs_conv.set_xlabel("N")
+    fig_conv.suptitle(title)
+    axs_conv.semilogx(N_list, iters, base=2)
+    return fig_conv
