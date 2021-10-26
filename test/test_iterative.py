@@ -71,7 +71,7 @@ class TestIterCaseOne(unittest.TestCase):
             U_sol = CaseOne.get_u(N)
             U_0 = CaseOne.get_u_0(N)
             U_num = mgv_conditioned_cg_minus_poisson(
-                U_0, rhs, N, nu1=2, nu2=2, max_level=2, tol=1e-5, maxiter=500
+                U_0, rhs, N, nu1=2, nu2=2, max_level=2, tol=1e-12, maxiter=500
             )
             DU = U_num - U_sol
             print(f"detla_{N}: {np.max(np.abs(DU))}")
@@ -118,7 +118,7 @@ class TestResdiual(unittest.TestCase):
                 rhs = case.get_rhs(N)
                 U_0 = case.get_u_0(N)
                 U_num = multigrid_minus_poisson(
-                    U_0, rhs, N, nu1=2, nu2=2, level=0, max_level=2, tol=10e-12
+                    U_0, rhs, N, nu1=2, nu2=2, level=0, max_level=2, tol=1e-12
                 )
                 res = rhs - neg_discrete_laplacian(U_num, N)
                 print(f"Residual_{N}: {np.max(np.abs(res))}")
