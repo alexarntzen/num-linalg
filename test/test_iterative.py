@@ -1,8 +1,7 @@
 import unittest
 import numpy as np
 
-from test.case_one import CaseOne
-from test.case_two import CaseTwo
+from test.test_case_poisson import CaseOne, CaseTwo
 
 from linalg.laplacian import neg_discrete_laplacian, D_inv, J_w
 from linalg.iterative import cg, weighted_jacobi
@@ -72,7 +71,7 @@ class TestIterCaseOne(unittest.TestCase):
             U_sol = CaseOne.get_u(N)
             U_0 = CaseOne.get_u_0(N)
             U_num = mgv_conditioned_cg_minus_poisson(
-                U_0, rhs, N, nu1=2, nu2=2, tol=1e-5, maxiter=500
+                U_0, rhs, N, nu1=2, nu2=2, max_level=2, tol=1e-5, maxiter=500
             )
             DU = U_num - U_sol
             print(f"detla_{N}: {np.max(np.abs(DU))}")
@@ -126,13 +125,20 @@ class TestResdiual(unittest.TestCase):
                 self.assertAlmostEqual(np.max(np.abs(res)), 0, delta=1e-3)
 
     def test_multigrid_conditioned_cg(self):
-        print("\nMultigrid:")
+        print("\nMultigrid conditioned cg:")
         for case in [CaseOne, CaseTwo]:
             for N in [32, 64, 128]:
                 rhs = case.get_rhs(N)
                 U_0 = case.get_u_0(N)
                 U_num = mgv_conditioned_cg_minus_poisson(
-                    U_0, rhs, N, nu1=2, nu2=1, tol=1e-12, maxiter=500
+                    U_0,
+                    rhs,
+                    N,
+                    nu1=2,
+                    nu2=1,
+                    max_level=2,
+                    tol=1e-12,
+                    maxiter=500,
                 )
                 res = rhs - neg_discrete_laplacian(U_num, N)
                 print(f"Residual_{N}: {np.max(np.abs(res))}")
