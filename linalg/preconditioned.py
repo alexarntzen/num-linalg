@@ -14,7 +14,7 @@ def mgv_conditioned_cg_minus_poisson(
     maxiter=None,
     conv_hist=False,
 ):
-    """Wrapper preconditioned conjugate gradient
+    """Wrapper for preconditioned conjugate gradient
     that uses one multigrid V-cycle as preconditioner"""
     cond_kwargs = dict(
         x_0=np.zeros((N + 1, N + 1)),
@@ -72,7 +72,10 @@ def preconditioned_cg(
 
         x = x + alpha * p
         r = r - alpha * Ap
+
+        # Here the preconditioner M is applied
         z = M_inv(rhs=r, **cond_kwargs)
+
         r_dot_r_new = np.tensordot(r, r, 2)
         r_dot_z_new = np.tensordot(r, z, 2)
         beta = r_dot_z_new / r_dot_z
@@ -87,7 +90,7 @@ def preconditioned_cg(
             hist.append(np.sqrt(r_dot_r / r_dot_r_0))
         if maxiter is not None and i > maxiter:
             break
-        # print("res: ",  r_dot_r / r_dot_r_0)
+
     if conv_hist:
         return x, hist
     else:
