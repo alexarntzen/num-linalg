@@ -24,6 +24,7 @@ report/main.pdf
 # To not include generated figures in project
 figures/*
 test/figures
+report/reports_finished_running/
 
 ## Intermediate documents:
 *.dvi
