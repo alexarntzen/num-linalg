@@ -1,6 +1,7 @@
 .idea
 .DS_store
 *__pycache__/
+*.ipynb_checkpoints
 *.pyc
 
 *.aux
@@ -23,6 +24,7 @@ report/main.pdf
 # To not include generated figures in project
 figures/*
 test/figures
+report/reports_finished_running/
 
 ## Intermediate documents:
 *.dvi
