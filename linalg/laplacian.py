@@ -1,6 +1,12 @@
 import numpy as np
 
 
+#
+# def laplace_homogeneous_dirichlet(u, N):
+#     # same assumes homogeneous dirichlet boundary conditions
+#     return convolve(u, laplace_kernel, mode="same") * N ** 2
+
+
 def neg_discrete_laplacian(u, N):
     """Compute negative discrete laplacian times h**2, id on the boundary"""
     index = np.arange(1, N)

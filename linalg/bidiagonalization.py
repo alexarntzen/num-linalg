@@ -39,7 +39,7 @@ def lanczos_bidiag_reorth(A: np.ndarray, k: int, b: np.ndarray):
     # Q[:, i] = v_{i+1}
     alpha = np.zeros(k)
     beta = np.zeros(k)
-    m ,n = A.shape
+    m, n = A.shape
     P = np.zeros((m, k))
     Q = np.zeros((n, k))
 

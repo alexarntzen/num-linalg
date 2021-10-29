@@ -2,9 +2,7 @@
 import scipy.linalg as sl
 import numpy as np
 
-laplace_kernel_1d = np.array(
-    [1, -2, -1]
-)
+laplace_kernel_1d = np.array([1, -2, -1])
 
 
 def raveldot(A: np.ndarray, x: np.ndarray):
@@ -46,7 +44,7 @@ class HeatEquation:
         return raveldot(self.B, self.A(t))
 
     def A(self, t) -> np.ndarray:
-        """ since exp(N (+) M) =  exp(N) (x) exp(M)"""
+        """since exp(N (+) M) =  exp(N) (x) exp(M)"""
         expXt = sl.expm(self.dxx * t)
         expYt = sl.expm(self.dyy * t)
         expBt = np.kron(expXt, expYt)

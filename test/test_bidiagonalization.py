@@ -9,8 +9,8 @@ class TestLanczos(unittest.TestCase):
     def test_bidiagonal_approx(self):
         for M in [32, 54, 128]:
             for N in [32, 64, 128]:
-                k = min(M,N)
-                k //=2
+                k = min(M, N)
+                k //= 2
                 print(f"\nTest appoximatons for N={N}, k={k}")
                 A = np.random.rand(M, N)
                 A_norm = np.linalg.norm(A, ord="fro")
