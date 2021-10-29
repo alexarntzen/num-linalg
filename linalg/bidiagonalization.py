@@ -8,9 +8,9 @@ def lanczos_bidiag(A: np.ndarray, k: int, b: np.ndarray):
     # Q[:, i] = v_{i+1}
     alpha = np.zeros(k)
     beta = np.zeros(k)
-    m = A.shape[0]
+    m, n = A.shape
     P = np.zeros((m, k))
-    Q = np.zeros((m, k))
+    Q = np.zeros((n, k))
 
     beta[0] = np.linalg.norm(b, ord=2)
     P[:, 0] = b / beta[0]
@@ -27,7 +27,7 @@ def lanczos_bidiag(A: np.ndarray, k: int, b: np.ndarray):
         # find next v and alpha
         v = A.T @ P[:, i + 1] - beta[i + 1] * Q[:, i]
         alpha[i + 1] = np.linalg.norm(v, ord=2)
-        P[:, i + 1] = v / alpha[i + 1]
+        Q[:, i + 1] = v / alpha[i + 1]
 
     return P, Q, alpha, beta
 
@@ -39,9 +39,9 @@ def lanczos_bidiag_reorth(A: np.ndarray, k: int, b: np.ndarray):
     # Q[:, i] = v_{i+1}
     alpha = np.zeros(k)
     beta = np.zeros(k)
-    m = A.shape[0]
+    m ,n = A.shape
     P = np.zeros((m, k))
-    Q = np.zeros((m, k))
+    Q = np.zeros((n, k))
 
     beta[0] = np.linalg.norm(b, ord=2)
     P[:, 0] = b / beta[0]
@@ -56,7 +56,6 @@ def lanczos_bidiag_reorth(A: np.ndarray, k: int, b: np.ndarray):
         P[:, i + 1] = u / beta[i + 1]
 
         w = A.T @ P[:, i + 1] - beta[i + 1] * Q[:, i]
-
         # this is weird because of stupid 0-indexing
         for j in range(i + 1):
             w = w - np.inner(Q[:, j], w) * Q[:, j]
