@@ -30,7 +30,7 @@ def kron_sum(A, B):
 
 
 class HeatEquation:
-    """d/dt = B @ A(t)"""
+    """d/dt A(t)= D @ A(t)"""
 
     def __init__(self, n, m, k):
         self.dxx, self.dyy = get_laplacians(m, n)
@@ -47,5 +47,27 @@ class HeatEquation:
         """since exp(N (+) M) =  exp(N) (x) exp(M)"""
         expXt = sl.expm(self.dxx * t)
         expYt = sl.expm(self.dyy * t)
+        expBt = np.kron(expXt, expYt)
+        return raveldot(expBt, self.A_0)
+
+
+class SchoedingerEquation:
+    """d/dt A(t)= i*D @ A(t)"""
+
+    def __init__(self, n, m, k):
+        self.dxx, self.dyy = get_laplacians(m, n)
+        self.D = kron_sum(self.dxx, self.dyy)
+        self.B = 1j * self.D
+        C_0 = np.random.rand(m, k)
+        D_0 = np.random.rand(m, k)
+        self.A_0 = C_0 @ D_0.T
+
+    def A_dot(self, t):
+        return raveldot(self.B, self.A(t))
+
+    def A(self, t) -> np.ndarray:
+        """since exp(N (+) M) =  exp(N) (x) exp(M)"""
+        expXt = sl.expm(self.dxx * t * 1j)
+        expYt = sl.expm(self.dyy * t * 1j)
         expBt = np.kron(expXt, expYt)
         return raveldot(expBt, self.A_0)
