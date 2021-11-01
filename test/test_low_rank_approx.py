@@ -3,7 +3,7 @@ import numpy as np
 from linalg.dynamic_approximation import (
     cayley_map_simple,
     cayley_map_efficient,
-    # cayley_map_plus,
+    cayley_map_plus,
 )
 
 from test.case_matrix_ode import HeatEquation
@@ -17,7 +17,7 @@ class TestMatrixOde(unittest.TestCase):
 
 class TestCayley(unittest.TestCase):
     def test_caylay(self):
-        for m in range(10, 20, 30):
+        for m in [10]:
             k = m // 2
 
             # make a test problem
@@ -34,11 +34,11 @@ class TestCayley(unittest.TestCase):
 
             S = cayley_map_simple(C @ D.T)
             E = cayley_map_efficient(C, D)
-            # P = cayley_map_plus(F, U)
+            P = cayley_map_plus(F, U)
 
             # test that cayley maps give same answer
             np.testing.assert_allclose(S, E)
-            # np.testing.assert_allclose(S, P)
+            np.testing.assert_allclose(S, P)
 
 
 if __name__ == "__main__":

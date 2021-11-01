@@ -10,7 +10,7 @@ class TestLanczos(unittest.TestCase):
         for M in [32, 54, 128]:
             for N in [32, 64, 128]:
                 k = min(M, N)
-                k //= 2
+                k //= 3
                 print(f"\nTest appoximatons for N={N}, k={k}")
                 A = np.random.rand(M, N)
                 A_norm = np.linalg.norm(A, ord="fro")

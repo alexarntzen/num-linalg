@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from test.test_case_poisson import CaseOne, CaseTwo
+from test.case_poisson import CaseOne, CaseTwo
 
 from linalg.laplacian import neg_discrete_laplacian, D_inv, J_w
 from linalg.iterative import cg, weighted_jacobi

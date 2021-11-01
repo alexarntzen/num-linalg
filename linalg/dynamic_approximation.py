@@ -22,7 +22,8 @@ def cayley_map_plus(F, U):
     m, k = F.shape
     I_m, I_k = np.eye(m), np.eye(k)
     Q = F.T @ F
-    DtC = np.linalg.inv(I_k - 0.5 * Q)
-    inner = np.block([[-DtC, 0.5 * DtC], [-Q @ DtC, DtC]])
-    cay = I_m + C @ inner @ D.T
+    A = np.linalg.inv(I_k + 0.25 * Q)
+    B = -1 / 2 * A
+    inner_inv = np.block([[A, B], [0.5 * Q @ A, -2 * B]])
+    cay = I_m + C @ inner_inv @ D.T
     return cay
