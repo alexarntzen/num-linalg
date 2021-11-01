@@ -13,3 +13,7 @@ def get_best_approx(A, k):
     s_k[k:] = 0  # this will overwrite s as well
     A_k = (u * s_k) @ vh
     return A_k
+
+
+def multiply_factorized(U, S, V):
+    return np.linalg.multi_dot([U, S, V.T])

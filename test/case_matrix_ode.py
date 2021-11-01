@@ -16,8 +16,10 @@ def get_laplacians(m, n):
     """Assumes homogeneous Dirichlet boundary conditions on outside nodes
     on unit square"""
     assert n > 2 and m > 2, "cannot make laplacian with so few nodes"
-    dxx = sl.convolution_matrix(laplace_kernel_1d * m ** 2, m, mode="same")
-    dyy = sl.convolution_matrix(laplace_kernel_1d * n ** 2, n, mode="same")
+    # dxx = sl.convolution_matrix(laplace_kernel_1d * m ** 2, m, mode="same")
+    # dyy = sl.convolution_matrix(laplace_kernel_1d * n ** 2, n, mode="same")
+    dxx = sl.convolution_matrix(laplace_kernel_1d, m, mode="same")
+    dyy = sl.convolution_matrix(laplace_kernel_1d, n, mode="same")
     return dxx, dyy
 
 
@@ -36,12 +38,13 @@ class HeatEquation:
         self.dxx, self.dyy = get_laplacians(m, n)
         self.D = kron_sum(self.dxx, self.dyy)
         self.B = self.D
-        C_0 = np.random.rand(m, k)
-        D_0 = np.random.rand(m, k)
-        self.A_0 = C_0 @ D_0.T
+        self.C_0 = np.random.rand(m, k)
+        self.D_0 = np.random.rand(m, k)
+        self.A_0 = self.C_0 @ self.D_0.T
 
-    def A_dot(self, t):
-        return raveldot(self.B, self.A(t))
+    def A_dot(self, t) -> np.ndarray:
+        A_dot = raveldot(self.B, self.A(t))
+        return A_dot
 
     def A(self, t) -> np.ndarray:
         """since exp(N (+) M) =  exp(N) (x) exp(M)"""
