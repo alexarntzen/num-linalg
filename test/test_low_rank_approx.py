@@ -48,9 +48,9 @@ class TestMatrixOde(unittest.TestCase):
 
 class TestCayley(unittest.TestCase):
     def test_caylay(self):
+        print("\nTest Caylay maps are equal:")
         for m in [10, 20, 30]:
             k = m // 2
-            print("\nTest Caylay maps are equal:")
             # make a test problem
             H = np.random.rand(m, k)
             G = np.random.rand(m, k)
