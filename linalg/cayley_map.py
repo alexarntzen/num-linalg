@@ -17,13 +17,12 @@ def cayley_map_efficient(C: np.ndarray, D: np.ndarray):
 
 def cayley_map_plus(F, U):
     """B=[F, -U]@[U, F].T, U@U.T =I, F.T@U=0"""
-    C = np.concatenate((F, -U), axis=1)
-    D = np.concatenate((U, F), axis=1)
+    C = np.block([F, -U])
+    D = np.block([U, F])
     m, k = F.shape
     I_m, I_k = np.eye(m), np.eye(k)
     Q = F.T @ F
     A = np.linalg.inv(I_k + 0.25 * Q)
-    B = -1 / 2 * A
-    inner_inv = np.block([[A, B], [0.5 * Q @ A, -2 * B]])
+    inner_inv = np.block([[A, -0.5 * A], [0.5 * Q @ A, A]])
     cay = I_m + C @ inner_inv @ D.T
     return cay

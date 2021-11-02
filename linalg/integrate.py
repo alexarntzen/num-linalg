@@ -3,14 +3,30 @@ import numpy as np
 from linalg.cayley_map import cayley_map_plus
 from linalg.helpers import multiply_factorized
 
-h_default = 0.001
-TOL_default = 0.001
+h_default = 1e-6
+TOL_default = 1e-5
 
 
 def matrix_ode_simple(
-    t_0, t_f, Y_0: tuple, X: callable, h_0=h_default, TOL=TOL_default, verbose=True
+    t_0,
+    t_f,
+    Y_0: tuple,
+    X: callable,
+    h_0=h_default,
+    TOL=TOL_default,
 ):
     """X is the vector field, Y is a tuple:= (U, S, V)"""
+
+    # check that initial  factorization is valid
+    U_0, _, V_0 = Y_0
+    m, k = U_0.shape
+    assert (
+        np.linalg.norm(U_0.T @ U_0 - np.eye(k), ord="fro") < TOL
+    ), "factorization not valid"
+    assert (
+        np.linalg.norm(V_0.T @ V_0 - np.eye(k), ord="fro") < TOL
+    ), "factorization not valid"
+
     # initialize variables
     h = h_0
     h_old = 0
@@ -19,6 +35,7 @@ def matrix_ode_simple(
     t = t_0
     T = [t_0]
     Y = [Y_0]
+
     while t <= t_f:
         Y_new, Y_new_est = rk_2_step(Y[j], X, h=h, t=t)
         Y_new_matrix = multiply_factorized(*Y_new)
@@ -26,8 +43,8 @@ def matrix_ode_simple(
 
         sigma = np.linalg.norm(Y_new_matrix - Y_new_est_matrix, ord="fro")
         t_new, h_new = step_control(sigma=sigma, TOL=TOL, t=t, h=h)
-        if verbose:
-            print(t_new)
+
+        # orthogonality check could also be here
         if t_new < t and count <= 3:
             count += 1
             t = t_new
@@ -78,9 +95,21 @@ def step_control(sigma, TOL, t, h):
 def rk_2_step(Y: tuple, X: callable, t, h, step_control=True):
     """Y = (S, U ,V)"""
 
-    Y_05, F_0 = rk_1_step(Y, X, h=0.5 * h, t=t)
+    # calculate current vector field
+    F_0 = X_proj(X, Y=Y, t=t)
+
+    # take half step with F_0
+    Y_05 = caylay_lie_step(Y=Y, F=F_0, h=0.5 * h)
+
+    # calculate vector field at Y_05
+    F_05 = X_proj(X=X, Y=Y_05, t=(t + 0.5 * h))
+
+    # estimate next Y_i with RK1
     Y_1_est = caylay_lie_step(Y, F=F_0, h=h)
-    Y_1, F_05 = rk_1_step(Y_05, X, h=0.5 * h, t=(t + 0.5 * h))
+
+    # Take step at Y_0 with "frozen" vector field at Y_05
+    Y_1 = caylay_lie_step(Y=Y, Y_frozen=Y_05, F=F_05, h=h)
+
     if step_control:
         return Y_1, Y_1_est
     else:
@@ -89,12 +118,12 @@ def rk_2_step(Y: tuple, X: callable, t, h, step_control=True):
 
 def rk_1_step(Y: tuple, X: callable, t, h) -> tuple:
     """Y = (S, U ,V)"""
-    F = X_proj(Y, X=X, t=t)
+    F = X_proj(X=X, Y=Y, t=t)
     Y_new = caylay_lie_step(Y=Y, F=F, h=h)
     return Y_new, F
 
 
-def X_proj(Y, X: callable, t):
+def X_proj(X: callable, Y, t):
     """g can have many representations, feks be {F=F, U=U)"""
     # split the tuple
     U, S, V = Y
@@ -113,10 +142,11 @@ def X_proj(Y, X: callable, t):
     return F_U, F_S, F_V
 
 
-def caylay_lie_step(Y: tuple, F: tuple, h: float):
+def caylay_lie_step(Y: tuple, F: tuple, h: float, Y_frozen=None):
     U, S, V = Y
+    U_f, S_f, V_f = Y_frozen if Y_frozen is not None else Y
     F_U, F_S, F_V = F
-    U_new = cayley_map_plus(F=(h * F_U), U=U) @ U
+    U_new = cayley_map_plus(F=(h * F_U), U=U_f) @ U
     S_new = S + h * F_S
-    V_new = cayley_map_plus(F=(h * F_V), U=V) @ V
+    V_new = cayley_map_plus(F=(h * F_V), U=V_f) @ V
     return U_new, S_new, V_new

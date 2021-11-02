@@ -34,43 +34,25 @@ def kron_sum(A, B):
 class HeatEquation:
     """d/dt A(t)= D @ A(t)"""
 
-    def __init__(self, n, m, k):
-        self.dxx, self.dyy = get_laplacians(m, n)
-        self.D = kron_sum(self.dxx, self.dyy)
-        self.B = self.D
-        self.C_0 = np.random.rand(m, k)
-        self.D_0 = np.random.rand(m, k)
-        self.A_0 = self.C_0 @ self.D_0.T
-
-    def A_dot(self, t) -> np.ndarray:
-        A_dot = raveldot(self.B, self.A(t))
-        return A_dot
-
-    def A(self, t) -> np.ndarray:
-        """since exp(N (+) M) =  exp(N) (x) exp(M)"""
-        expXt = sl.expm(self.dxx * t)
-        expYt = sl.expm(self.dyy * t)
-        expBt = np.kron(expXt, expYt)
-        return raveldot(expBt, self.A_0)
-
-
-class SchoedingerEquation:
-    """d/dt A(t)= i*D @ A(t)"""
-
-    def __init__(self, n, m, k):
-        self.dxx, self.dyy = get_laplacians(m, n)
-        self.D = kron_sum(self.dxx, self.dyy)
-        self.B = 1j * self.D
+    @staticmethod
+    def generate_case(n, m, k):
+        dxx, dyy = get_laplacians(m, n)
+        D = kron_sum(dxx, dyy)
+        B = D
         C_0 = np.random.rand(m, k)
         D_0 = np.random.rand(m, k)
-        self.A_0 = C_0 @ D_0.T
 
-    def A_dot(self, t):
-        return raveldot(self.B, self.A(t))
+        A_0 = C_0 @ D_0.T
 
-    def A(self, t) -> np.ndarray:
-        """since exp(N (+) M) =  exp(N) (x) exp(M)"""
-        expXt = sl.expm(self.dxx * t * 1j)
-        expYt = sl.expm(self.dyy * t * 1j)
-        expBt = np.kron(expXt, expYt)
-        return raveldot(expBt, self.A_0)
+        def A(t) -> np.ndarray:
+            """since exp(N (+) M) =  exp(N) (x) exp(M)"""
+            expXt = sl.expm(dxx * t)
+            expYt = sl.expm(dyy * t)
+            expBt = np.kron(expXt, expYt)
+            return raveldot(expBt, A_0)
+
+        def A_dot(t) -> np.ndarray:
+            A_dot = raveldot(B, A(t))
+            return A_dot
+
+        return A_0, A, A_dot

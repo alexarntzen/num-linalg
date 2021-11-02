@@ -14,38 +14,43 @@ from test.case_matrix_ode import HeatEquation
 
 class TestMatrixOde(unittest.TestCase):
     def testSolutionMap(self):
-        eq = HeatEquation(5, 5, k=3)
-        np.testing.assert_allclose(eq.A(0), eq.A_0)
+        print("\nTesting Heat Eqation Case:")
+        A_0, A, A_dot = HeatEquation.generate_case(5, 5, k=3)
+        np.testing.assert_allclose(A(0), A_0)
 
     def test_integrator(self):
-        m = 5
+        m = 4
         k = 3
-        eq = HeatEquation(m, m, k=k)
+        t_f = 0.5
+        print(f"\nTesting simple integrator on m={m}, k={k}:")
 
-        # b = np.random.rand(m)
-        # U_0, V_0, alpha, beta = lanczos_bidiag_reorth(eq.A_0, k, b)
-        # S_0 = make_bidiagonal(alpha, beta).toarray()
+        # generate case and start conditions
+        A_0, A, A_dot = HeatEquation.generate_case(n=m, m=m, k=k)
+        b = np.random.rand(m)
+        U_0, V_0, alpha, beta = lanczos_bidiag_reorth(A_0, k, b)
+        S_0 = make_bidiagonal(alpha, beta).toarray()
 
-        U_0, V_0 = eq.C_0, eq.D_0
-        S_0 = np.eye(k)
-
-        Y, T = matrix_ode_simple(0, 1, Y_0=(U_0, S_0, V_0), X=eq.A_dot)
+        # integrate
+        Y, T = matrix_ode_simple(0, t_f, Y_0=(U_0, S_0, V_0), X=A_dot, TOL=1e-4)
         Y_mat = multiply_factorized(*Y[-1])
 
-        A_1 = eq.A(1)
+        # measure difference from last matrix
+        A_1 = A(0.5)
         A_1_fro = np.linalg.norm(A_1, ord="fro")
         fro_diff = np.linalg.norm(Y_mat - A_1, ord="fro")
 
         # this is apparently wrong
-        # something wanky is happening here its integrating in the opposite way :(
+
         self.assertLess(fro_diff, A_1_fro)
+
+        print("Total: ", A_1_fro, " Residual", fro_diff)
 
 
 class TestCayley(unittest.TestCase):
     def test_caylay(self):
-        for m in [10]:
+        for m in [10, 20, 30]:
             k = m // 2
-
+            print("\nTest Caylay maps are equal:")
             # make a test problem
             H = np.random.rand(m, k)
             G = np.random.rand(m, k)
