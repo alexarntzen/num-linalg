@@ -56,3 +56,64 @@ class HeatEquation:
             return A_dot
 
         return A_0, A, A_dot
+
+
+class FirstExample:
+    """d/dt A(t)= D @ A(t)"""
+
+    @classmethod
+    def generate_case(cls, eps):
+        n = 100
+        T_1 = cls.get_skew_symmetric(n, [1])
+        T_2 = cls.get_skew_symmetric(n, [0.5, 1])
+        A_1 = cls.get_A(eps=eps)
+        A_2 = cls.get_A(eps=eps)
+
+        A_0 = T_1 @ (A_1 + A_2) @ T_2
+
+        def Q_1(t):
+            return sl.expm(T_1 * t)
+
+        def Q_1_dot(t):
+            return T_1 @ Q_1(t)
+
+        def Q_2(t):
+            return sl.expm(T_2 * t)
+
+        def Q_2_dot(t):
+            return T_2 @ Q_2(t)
+
+        def A(t):
+            return Q_1(t) @ (A_1 + np.exp(t) * A_2) @ Q_2(t)
+
+        def A_dot(t):
+            Q_1_t = Q_1(t)
+            Q_2_t = Q_2(t)
+
+            Q_inner = Q_1_t @ (A_1 + np.exp(t) * A_2)
+
+            d_one = T_1 @ Q_1_t @ Q_inner @ Q_2_t
+            d_two = Q_1_t @ Q_inner @ T_2 @ Q_2_t
+            d_tree = Q_1_t @ (np.exp(t) * A_1) @ Q_2_t
+
+            return d_one + d_two + d_tree
+
+        return A_0, A, A_dot
+
+    @staticmethod
+    def get_skew_symmetric(n, coeffs):
+        T = np.zeros((n, n))
+        for k, coeff in enumerate(coeffs):
+            i = k + 1
+            np.fill_diagonal(T[i:, :-i], coeff)
+            np.fill_diagonal(T[:-i, i:], -coeff)
+
+        return T
+
+    @staticmethod
+    def get_A(eps=1e-3):
+        A_ = np.eye(10)
+        A_delta = np.random.rand(10, 10) * 0.5
+        A = np.random.rand(100, 100) * eps
+        A[:10, :10] = A_ + A_delta
+        return A
