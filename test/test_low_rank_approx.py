@@ -9,7 +9,11 @@ from linalg.integrate import matrix_ode_simple
 from linalg.bidiagonalization import lanczos_bidiag_reorth
 from linalg.helpers import make_bidiagonal, multiply_factorized
 
-from test.case_matrix_ode import generate_heat_equation, generate_first_example, generate_second_example
+from test.case_matrix_ode import (
+    generate_heat_equation,
+    generate_first_example,
+    generate_second_example,
+)
 
 
 class TestMatrixOde(unittest.TestCase):
@@ -19,8 +23,8 @@ class TestMatrixOde(unittest.TestCase):
         np.testing.assert_allclose(A(0), A_0)
 
     def test_integrator_heat(self):
-        m = 100
-        k = 100
+        m = 10
+        k = 7
         t_f = 0.5
         print(f"\nTesting simple integrator on HeatEqation m={m}, k={k}:")
 
@@ -48,10 +52,10 @@ class TestMatrixOde(unittest.TestCase):
         k = 20
         t_f = 0.5
         eps = 1e-3
-        print(f"\nTesting simple integrator on first example eps={eps}:")
+        print(f"\nTesting simple integrator on first example m={m}, k={k}:")
 
         # generate case and start conditions
-        A_0, A, A_dot =generate_first_example(eps=eps)
+        A_0, A, A_dot = generate_first_example(eps=eps)
         b = np.random.rand(m)
         U_0, V_0, alpha, beta = lanczos_bidiag_reorth(A_0, k, b)
         S_0 = make_bidiagonal(alpha, beta).toarray()
@@ -77,10 +81,10 @@ class TestMatrixOde(unittest.TestCase):
         k = 20
         t_f = 0.5
         eps = 1e-1
-        print(f"\nTesting simple integrator on first example eps={eps}:")
+        print(f"\nTesting simple integrator on second example m={m}, k={k}:")
 
         # generate case and start conditions
-        A_0, A, A_dot =generate_second_example(eps=eps)
+        A_0, A, A_dot = generate_second_example(eps=eps)
         b = np.random.rand(m)
         U_0, V_0, alpha, beta = lanczos_bidiag_reorth(A_0, k, b)
         S_0 = make_bidiagonal(alpha, beta).toarray()
@@ -100,6 +104,7 @@ class TestMatrixOde(unittest.TestCase):
         self.assertLess(fro_diff, A_1_fro)
 
         print("Total: ", A_1_fro, " Residual", fro_diff)
+
 
 class TestCayley(unittest.TestCase):
     def test_caylay(self):
