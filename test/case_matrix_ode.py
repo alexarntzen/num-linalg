@@ -97,15 +97,27 @@ def raveldot(A: np.ndarray, x: np.ndarray):
     return Ax
 
 
-def get_laplacians(m, n):
+def get_laplacians(m, n, boundary="periodic"):
     """Assumes homogeneous Dirichlet boundary conditions on outside nodes
     on unit square"""
     assert n > 2 and m > 2, "cannot make laplacian with so few nodes"
+    assert boundary in ("hom_dirichlet", "periodic")
     # dxx = sl.convolution_matrix(laplace_kernel_1d * m ** 2, m, mode="same")
     # dyy = sl.convolution_matrix(laplace_kernel_1d * n ** 2, n, mode="same")
-    laplace_kernel_1d = np.array([1, -2, -1])
-    dxx = sl.convolution_matrix(laplace_kernel_1d, m, mode="same")
-    dyy = sl.convolution_matrix(laplace_kernel_1d, n, mode="same")
+
+    laplace_kernel_1d = np.array([1, -2, 1])
+    dxx = sl.convolution_matrix(laplace_kernel_1d, m, mode="full")
+    dyy = sl.convolution_matrix(laplace_kernel_1d, n, mode="full")
+
+    if boundary == "periodic":
+        # the boundary points are assumed to be the ones on the other side
+        dxx[1] += dxx[-1]
+        dxx[-2] += dxx[0]
+        dyy[1] += dyy[-1]
+        dyy[-2] += dyy[0]
+
+    # exclude boundary points
+    dxx, dyy = dxx[1:-1], dyy[1:-1]
     return dxx, dyy
 
 

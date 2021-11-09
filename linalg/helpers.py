@@ -17,3 +17,11 @@ def get_best_approx(A, k):
 
 def multiply_factorized(U, S, V):
     return np.linalg.multi_dot([U, S, V.T])
+
+
+def get_singular_values_list(Y_list):
+    pass
+
+
+def get_singular_values(Y):
+    pass
