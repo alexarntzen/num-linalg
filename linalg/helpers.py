@@ -20,8 +20,11 @@ def multiply_factorized(U, S, V):
 
 
 def get_singular_values_list(Y_list):
-    pass
-
-
-def get_singular_values(Y):
-    pass
+    # check if of type U, S, V
+    if isinstance(Y_list[0], tuple):
+        mat_array = np.array(Y_list, dtype=object)[:, 1]
+    elif len(Y_list[0].shape) != 3:
+        raise ValueError("Y_list format not supported")
+    else:
+        mat_array = np.array(Y_list)
+    return np.linalg.eig(mat_array)
