@@ -69,7 +69,7 @@ class FirstExample:
         A_1 = cls.get_A(eps=eps)
         A_2 = cls.get_A(eps=eps)
 
-        A_0 = T_1 @ (A_1 + A_2) @ T_2
+        A_0 = A_1 + A_2
 
         def Q_1(t):
             return sl.expm(T_1 * t)
@@ -84,17 +84,16 @@ class FirstExample:
             return T_2 @ Q_2(t)
 
         def A(t):
-            return Q_1(t) @ (A_1 + np.exp(t) * A_2) @ Q_2(t)
+            return Q_1(t) @ (A_1 + np.exp(t) * A_2) @ Q_2(t).T
 
         def A_dot(t):
             Q_1_t = Q_1(t)
             Q_2_t = Q_2(t)
+            A_t = A(t)
 
-            Q_inner = Q_1_t @ (A_1 + np.exp(t) * A_2)
-
-            d_one = T_1 @ Q_1_t @ Q_inner @ Q_2_t
-            d_two = Q_1_t @ Q_inner @ T_2 @ Q_2_t
-            d_tree = Q_1_t @ (np.exp(t) * A_1) @ Q_2_t
+            d_one = T_1 @ A_t
+            d_two = A_t @ T_2.T
+            d_tree = Q_1_t @ (np.exp(t) * A_2) @ Q_2_t.T
 
             return d_one + d_two + d_tree
 

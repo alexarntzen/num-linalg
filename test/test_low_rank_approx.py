@@ -20,7 +20,7 @@ class TestMatrixOde(unittest.TestCase):
 
     def test_integrator_heat(self):
         m = 100
-        k = 3
+        k = 100
         t_f = 0.5
         print(f"\nTesting simple integrator on HeatEqation m={m}, k={k}:")
 
@@ -45,8 +45,8 @@ class TestMatrixOde(unittest.TestCase):
 
     def test_integrator_eks_1(self):
         m = 100
-        k = 100
-        t_f = 0.1
+        k = 20
+        t_f = 0.5
         eps = 1e-3
         print(f"\nTesting simple integrator on first example eps={eps}:")
 
@@ -57,11 +57,13 @@ class TestMatrixOde(unittest.TestCase):
         S_0 = make_bidiagonal(alpha, beta).toarray()
 
         # integrate
-        Y, T = matrix_ode_simple(0, t_f, Y_0=(U_0, S_0, V_0), X=A_dot, TOL=1e-5)
+        Y, T = matrix_ode_simple(
+            0, t_f, Y_0=(U_0, S_0, V_0), X=A_dot, TOL=1e-4, verbose=True
+        )
         Y_mat = multiply_factorized(*Y[-1])
 
         # measure difference from last matrix
-        A_1 = A(0.5)
+        A_1 = A(t_f)
         A_1_fro = np.linalg.norm(A_1, ord="fro")
         fro_diff = np.linalg.norm(Y_mat - A_1, ord="fro")
 

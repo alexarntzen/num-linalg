@@ -8,12 +8,7 @@ TOL_default = 1e-5
 
 
 def matrix_ode_simple(
-    t_0,
-    t_f,
-    Y_0: tuple,
-    X: callable,
-    h_0=h_default,
-    TOL=TOL_default,
+    t_0, t_f, Y_0: tuple, X: callable, h_0=h_default, TOL=TOL_default, verbose=False
 ):
     """X is the vector field, Y is a tuple:= (U, S, V)"""
 
@@ -35,7 +30,6 @@ def matrix_ode_simple(
     t = t_0
     T = [t_0]
     Y = [Y_0]
-
     while t <= t_f:
         Y_new, Y_new_est = rk_2_step(Y[j], X, h=h, t=t)
         Y_new_matrix = multiply_factorized(*Y_new)
@@ -44,6 +38,9 @@ def matrix_ode_simple(
         sigma = np.linalg.norm(Y_new_matrix - Y_new_est_matrix, ord="fro")
         t_new, h_new = step_control(sigma=sigma, TOL=TOL, t=t, h=h)
 
+        if verbose:
+            if j % 100 == 0:
+                print(f"step t={t}")
         # orthogonality check could also be here
         if t_new < t and count <= 3:
             count += 1
@@ -58,7 +55,6 @@ def matrix_ode_simple(
             t = t_new
             h_old, h = h, h_new
             count = 0
-
     # go one step back and calculate to the end
     t = t - h_old
     h = t_f - t
