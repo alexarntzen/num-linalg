@@ -1,10 +1,5 @@
 import unittest
 import numpy as np
-from linalg.cayley_map import (
-    cayley_map_simple,
-    cayley_map_efficient,
-    cayley_map_plus,
-)
 from linalg.integrate import matrix_ode_simple
 from linalg.bidiagonalization import lanczos_bidiag_reorth
 from linalg.helpers import make_bidiagonal, multiply_factorized
@@ -104,32 +99,6 @@ class TestMatrixOde(unittest.TestCase):
         self.assertLess(fro_diff, A_1_fro)
 
         print("Total: ", A_1_fro, " Residual", fro_diff)
-
-
-class TestCayley(unittest.TestCase):
-    def test_caylay(self):
-        print("\nTest Caylay maps are equal:")
-        for m in [10, 20, 30]:
-            k = m // 2
-            # make a test problem
-            H = np.random.rand(m, k)
-            G = np.random.rand(m, k)
-            U, _ = np.linalg.qr(H)
-            F = (np.eye(m) - U @ U.T) @ G
-            np.testing.assert_allclose(np.eye(k), U.T @ U, atol=1e-14)
-
-            # create C and D
-            C = np.concatenate((F, -U), axis=1)
-            D = np.concatenate((U, F), axis=1)
-            np.testing.assert_allclose(C @ D.T, F @ U.T - U @ F.T, atol=1e-14)
-
-            S = cayley_map_simple(C @ D.T)
-            E = cayley_map_efficient(C, D)
-            P = cayley_map_plus(F, U)
-
-            # test that cayley maps give same answer
-            np.testing.assert_allclose(S, E)
-            np.testing.assert_allclose(S, P)
 
 
 if __name__ == "__main__":

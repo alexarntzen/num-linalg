@@ -1,21 +1,6 @@
-import numpy as np
 import matplotlib.pyplot as plt
 
-
-def get_data_of_N(method: callable, case, N_list, tol=1e-12, **method_kwargs):
-    """Get convergence data"""
-    iters = np.zeros(len(N_list))
-    final_res = np.zeros(len(N_list))
-    for i, N in enumerate(N_list):
-        rhs = case.get_rhs(N)
-        x_0 = case.get_u_0(N)
-        _, conv_hist = method(
-            x_0=x_0, rhs=rhs, N=N, tol=tol, conv_hist=True, **method_kwargs
-        )
-        N_list[i] = N
-        iters[i] = len(conv_hist)
-        final_res[i] = conv_hist[-1]
-    return N_list, iters, final_res
+from linalg.helpers import get_data_of_N
 
 
 def plot_first_iterations(
