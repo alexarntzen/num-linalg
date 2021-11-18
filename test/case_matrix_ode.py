@@ -3,13 +3,12 @@ import scipy.linalg as sl
 import numpy as np
 
 
-def generate_heat_equation(n, m, k):
-    dxx, dyy = get_laplacians(m, n)
+def generate_heat_equation(n, m, k, boundary="periodic"):
+    dxx, dyy = get_laplacian(m, boundary=boundary), get_laplacian(n, boundary=boundary)
     D = kron_sum(dxx, dyy)
     B = D
     C_0 = np.random.rand(m, k)
     D_0 = np.random.rand(m, k)
-
     A_0 = C_0 @ D_0.T
 
     def A(t) -> np.ndarray:
@@ -97,28 +96,25 @@ def raveldot(A: np.ndarray, x: np.ndarray):
     return Ax
 
 
-def get_laplacians(m, n, boundary="periodic"):
+def get_laplacian(n, boundary="periodic"):
     """Assumes homogeneous Dirichlet boundary conditions on outside nodes
     on unit square"""
-    assert n > 2 and m > 2, "cannot make laplacian with so few nodes"
-    assert boundary in ("hom_dirichlet", "periodic")
+    assert n > 2, f"cannot make laplacian with {n} few nodes"
+    # zero is homogeneous dirichlet
+    assert boundary in ("zero", "periodic")
     # dxx = sl.convolution_matrix(laplace_kernel_1d * m ** 2, m, mode="same")
     # dyy = sl.convolution_matrix(laplace_kernel_1d * n ** 2, n, mode="same")
 
     laplace_kernel_1d = np.array([1, -2, 1])
-    dxx = sl.convolution_matrix(laplace_kernel_1d, m, mode="full")
-    dyy = sl.convolution_matrix(laplace_kernel_1d, n, mode="full")
+    dxx = sl.convolution_matrix(laplace_kernel_1d * n ** 2, n, mode="full")
 
     if boundary == "periodic":
         # the boundary points are assumed to be the ones on the other side
         dxx[1] += dxx[-1]
         dxx[-2] += dxx[0]
-        dyy[1] += dyy[-1]
-        dyy[-2] += dyy[0]
-
     # exclude boundary points
-    dxx, dyy = dxx[1:-1], dyy[1:-1]
-    return dxx, dyy
+    dxx = dxx[1:-1]
+    return dxx
 
 
 def kron_sum(A, B):

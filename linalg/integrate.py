@@ -1,5 +1,4 @@
 import numpy as np
-
 from linalg.cayley_map import cayley_map_plus
 from linalg.helpers import multiply_factorized
 
