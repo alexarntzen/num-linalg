@@ -1,8 +1,12 @@
 import unittest
 
 import numpy as np
-from linalg.bidiagonalization import lanczos_bidiag, lanczos_bidiag_reorth
-from linalg.helpers import make_bidiagonal, get_best_approx
+from linalg.bidiagonalization import (
+    lanczos_bidiag,
+    lanczos_bidiag_reorth,
+    make_bidiagonal,
+)
+from linalg.helpers import get_best_approx
 
 
 class TestLanczos(unittest.TestCase):

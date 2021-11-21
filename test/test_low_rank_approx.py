@@ -1,8 +1,8 @@
 import unittest
 import numpy as np
 from linalg.integrate import matrix_ode_simple
-from linalg.bidiagonalization import lanczos_bidiag_reorth
-from linalg.helpers import make_bidiagonal, multiply_factorized
+from linalg.bidiagonalization import lanczos_bidiag_reorth, make_bidiagonal
+from linalg.helpers import multiply_factorized
 
 from test.case_matrix_ode import (
     generate_heat_equation,
@@ -13,24 +13,26 @@ from test.case_matrix_ode import (
 
 class TestMatrixOde(unittest.TestCase):
     def testSolutionMap(self):
-        print("\nTesting Heat Eqation Case:")
-        A_0, A, A_dot = generate_heat_equation(5, 5, k=3)
+        print("\nTesting Heat Equation Case:")
+        A_0, A, A_dot = generate_heat_equation(25, 25, k=10)
         np.testing.assert_allclose(A(0), A_0)
 
     def test_integrator_heat(self):
         m = 10
         k = 7
-        t_f = 0.5
+        t_f = 1
         print(f"\nTesting simple integrator on HeatEqation m={m}, k={k}:")
 
         # generate case and start conditions
         A_0, A, A_dot = generate_heat_equation(n=m, m=m, k=k)
         b = np.random.rand(m)
         U_0, V_0, alpha, beta = lanczos_bidiag_reorth(A_0, k, b)
-        S_0 = make_bidiagonal(alpha, beta).toarray()
+        S_0 = make_bidiagonal(alpha, beta)
 
         # integrate
-        Y, T = matrix_ode_simple(0, t_f, Y_0=(U_0, S_0, V_0), X=A_dot, TOL=1e-4)
+        Y, T = matrix_ode_simple(
+            0, t_f, Y_0=(U_0, S_0, V_0), X=A_dot, TOL=1e-3, verbose=True
+        )
         Y_mat = multiply_factorized(*Y[-1])
 
         # measure difference from last matrix
@@ -53,7 +55,7 @@ class TestMatrixOde(unittest.TestCase):
         A_0, A, A_dot = generate_first_example(eps=eps)
         b = np.random.rand(m)
         U_0, V_0, alpha, beta = lanczos_bidiag_reorth(A_0, k, b)
-        S_0 = make_bidiagonal(alpha, beta).toarray()
+        S_0 = make_bidiagonal(alpha, beta)
 
         # integrate
         Y, T = matrix_ode_simple(
@@ -82,7 +84,7 @@ class TestMatrixOde(unittest.TestCase):
         A_0, A, A_dot = generate_second_example(eps=eps)
         b = np.random.rand(m)
         U_0, V_0, alpha, beta = lanczos_bidiag_reorth(A_0, k, b)
-        S_0 = make_bidiagonal(alpha, beta).toarray()
+        S_0 = make_bidiagonal(alpha, beta)
 
         # integrate
         Y, T = matrix_ode_simple(

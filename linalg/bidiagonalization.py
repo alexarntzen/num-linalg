@@ -1,4 +1,6 @@
 import numpy as np
+from scipy.sparse import diags
+from linalg.helpers import multiply_factorized
 
 
 def lanczos_bidiag(A: np.ndarray, k: int, b: np.ndarray):
@@ -32,7 +34,7 @@ def lanczos_bidiag(A: np.ndarray, k: int, b: np.ndarray):
     return P, Q, alpha, beta
 
 
-def lanczos_bidiag_reorth(A: np.ndarray, k: int, b: np.ndarray):
+def lanczos_bidiag_reorth(A: np.ndarray, k: int, b: np.ndarray, full_matrices=False):
     # b is an arbitrary vector in R^m
     # from algorithm:
     # P[:, i] = u_{i+1}
@@ -63,5 +65,19 @@ def lanczos_bidiag_reorth(A: np.ndarray, k: int, b: np.ndarray):
         # find next v and alpha
         alpha[i + 1] = np.linalg.norm(w, ord=2)
         Q[:, i + 1] = w / alpha[i + 1]
+    if full_matrices:
+        return P, make_bidiagonal(alpha, beta), Q
+    else:
+        return P, Q, alpha, beta
 
-    return P, Q, alpha, beta
+
+def make_bidiagonal(alpha: np.ndarray, beta: np.ndarray):
+    """Transform two vectors to a bidiagonal matrix"""
+    bidiagonals = [alpha, beta[1:]]
+    return diags(bidiagonals, [0, -1]).toarray()
+
+
+def get_bidiagonal_approx(A: np.ndarray, k: int, b: np.ndarray):
+    P, Q, alpha, beta = lanczos_bidiag_reorth(A, k, b)
+    S = make_bidiagonal(alpha, beta)
+    return multiply_factorized(P, S, Q)

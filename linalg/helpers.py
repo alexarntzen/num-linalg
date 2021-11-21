@@ -1,12 +1,17 @@
 import numpy as np
-from scipy.sparse import diags
 import timeit
 from functools import partial
 
 
-def make_bidiagonal(alpha: np.ndarray, beta: np.ndarray):
-    bidiagonals = [alpha, beta[1:]]
-    return diags(bidiagonals, [0, -1])
+def get_equidistant_indexes(T: np.ndarray, a=0, b=1, n=100):
+    X = np.linspace(a, b, n)
+    indexes = [np.argmin(np.abs(T - x)) for x in X]
+    return indexes
+
+
+def truncated_svd(A, k):
+    U, s, Vh = np.linalg.svd(A, full_matrices=True)
+    return U[:, :k], np.diag(s[:k]), Vh.T[:, :k]
 
 
 def get_best_approx(A, k):
@@ -19,17 +24,6 @@ def get_best_approx(A, k):
 
 def multiply_factorized(U, S, V):
     return np.linalg.multi_dot([U, S, V.T])
-
-
-def get_singular_values_list(Y_list):
-    # check if of type U, S, V
-    if isinstance(Y_list[0], tuple):
-        mat_array = np.array(Y_list, dtype=object)[:, 1]
-    elif len(Y_list[0].shape) != 3:
-        raise ValueError("Y_list format not supported")
-    else:
-        mat_array = np.array(Y_list)
-    return np.linalg.eig(mat_array)
 
 
 def get_data_of_N(method: callable, case, N_list, tol=1e-12, **method_kwargs):

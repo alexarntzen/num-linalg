@@ -1,25 +1,37 @@
 """Implements the test cases from the report"""
 import scipy.linalg as sl
+import scipy.sparse.linalg as spl
 import numpy as np
 
 
 def generate_heat_equation(n, m, k, boundary="periodic"):
-    dxx, dyy = get_laplacian(m, boundary=boundary), get_laplacian(n, boundary=boundary)
-    D = kron_sum(dxx, dyy)
-    B = D
+    dxx = get_laplacian(m, boundary=boundary)
+    dyy = get_laplacian(n, boundary=boundary)
+
+    # The code was optimized so this is not needed. Se below
+    # D = kronsum(dxx, dyy)
+    # B = D
     C_0 = np.random.rand(m, k)
     D_0 = np.random.rand(m, k)
     A_0 = C_0 @ D_0.T
 
     def A(t) -> np.ndarray:
-        """since exp(N (+) M) =  exp(N) (x) exp(M)"""
-        expXt = sl.expm(dxx * t)
-        expYt = sl.expm(dyy * t)
-        expBt = np.kron(expXt, expYt)
-        return raveldot(expBt, A_0)
+        """since exp(N (+) M) =  exp(N) (x) exp(M)
+        and N (x) M vec(X) = NXM.T
+        so we compute
+        exp(dxx*t) @ A_0 @ exp(dyy*t).T
+        """
+        left_multi = spl.expm_multiply(dxx * t, A_0)
+        right_multi = spl.expm_multiply(dyy * t, left_multi.T).T
+        return right_multi
 
     def A_dot(t) -> np.ndarray:
-        A_dot = raveldot(B, A(t))
+        """
+        B = dxx (+) dyy, so:
+        B vec(A) = dxx @ A + A @ dyy.T
+        """
+        A_t = A(t)
+        A_dot = dxx @ A_t + A_t @ dyy.T
         return A_dot
 
     return A_0, A, A_dot
@@ -115,14 +127,6 @@ def get_laplacian(n, boundary="periodic"):
     # exclude boundary points
     dxx = dxx[1:-1]
     return dxx
-
-
-def kron_sum(A, B):
-    m = A.shape[0]
-    n = B.shape[0]
-    left = np.kron(A, np.eye(n))
-    right = np.kron(np.eye(m), B)
-    return left + right
 
 
 def get_skew_symmetric(n, coeffs):
