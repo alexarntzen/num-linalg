@@ -2,7 +2,11 @@ import unittest
 
 import numpy as np
 
-from linalg.cayley_map import cayley_map_simple, cayley_map_efficient, cayley_map_plus
+from linalg.cayley_map import (
+    cayley_map_simple,
+    cayley_map_efficient,
+    cayley_map_efficient_mod,
+)
 
 from test.case_caylay import get_FUCDB
 
@@ -24,7 +28,7 @@ class TestCayley(unittest.TestCase):
 
             S = cayley_map_simple(C @ D.T)
             E = cayley_map_efficient(C, D)
-            P = cayley_map_plus(F, U)
+            P = cayley_map_efficient_mod(F, U)
 
             # test that cayley maps give same answer
             np.testing.assert_allclose(S, E, **tol)

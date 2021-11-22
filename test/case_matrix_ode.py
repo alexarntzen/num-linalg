@@ -12,7 +12,7 @@ def generate_heat_equation(n, m, k, boundary="periodic"):
     # D = kronsum(dxx, dyy)
     # B = D
     C_0 = np.random.rand(m, k)
-    D_0 = np.random.rand(m, k)
+    D_0 = np.random.rand(n, k)
     A_0 = C_0 @ D_0.T
 
     def A(t) -> np.ndarray:

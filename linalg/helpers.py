@@ -4,17 +4,20 @@ from functools import partial
 
 
 def get_equidistant_indexes(T: np.ndarray, a=0, b=1, n=100):
+    """Get indices almost equidistant entries of T"""
     X = np.linspace(a, b, n)
     indexes = [np.argmin(np.abs(T - x)) for x in X]
     return indexes
 
 
 def truncated_svd(A, k):
+    """return the truncated svd in the form of 3 matrices U S V"""
     U, s, Vh = np.linalg.svd(A, full_matrices=True)
     return U[:, :k], np.diag(s[:k]), Vh.T[:, :k]
 
 
 def get_best_approx(A, k):
+    """Get the rank k best approximation of A using SVD"""
     u, s, vh = np.linalg.svd(A, full_matrices=False)
     s_k = s
     s_k[k:] = 0  # this will overwrite s as well

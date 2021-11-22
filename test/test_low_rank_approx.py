@@ -18,12 +18,13 @@ class TestMatrixOde(unittest.TestCase):
 
     def test_integrator_heat(self):
         m = 10
+        n = 15
         k = 7
         t_f = 1
         print(f"\nTesting simple integrator on HeatEqation m={m}, k={k}:")
 
         # generate case and start conditions
-        A_0, A, A_dot = generate_heat_equation(n=m, m=m, k=k)
+        A_0, A, A_dot = generate_heat_equation(n=n, m=m, k=k)
         Y_0 = truncated_svd(A_0, k=k)
 
         # integrate
