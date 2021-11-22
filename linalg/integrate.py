@@ -124,15 +124,17 @@ def X_proj(X: callable, Y, t):
     U, S, V = Y
 
     # calculate variables that are used multiple times
-    m, k = U.shape
+    m, _ = U.shape
+    n, _ = V.shape
     I_m = np.eye(m)
+    I_n = np.eye(n)
     A_dot = X(t)
     S_inv = np.linalg.inv(S)
 
     # calculate projected vector field
     F_U = (I_m - U @ U.T) @ A_dot @ V @ S_inv
     F_S = U.T @ A_dot @ V
-    F_V = (I_m - V @ V.T) @ A_dot.T @ U @ S_inv.T
+    F_V = (I_n - V @ V.T) @ A_dot.T @ U @ S_inv.T
 
     return F_U, F_S, F_V
 
@@ -145,3 +147,10 @@ def caylay_lie_step(Y: tuple, F: tuple, h: float, Y_frozen=None):
     S_new = S + h * F_S
     V_new = cayley_map_plus(F=(h * F_V), U=V_f) @ V
     return U_new, S_new, V_new
+
+
+def get_y_dot(A_dot: callable, Y: np.ndarray, t):
+    U_dot, S_dot, V_dot = X_proj(X=A_dot, Y=Y, t=t)
+    U, S, V = Y
+    Y_dot = U_dot @ S @ V.T + U @ S_dot @ V.T + U @ S @ V_dot.T
+    return Y_dot

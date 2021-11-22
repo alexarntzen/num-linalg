@@ -1,8 +1,7 @@
 import unittest
 import numpy as np
 from linalg.integrate import matrix_ode_simple
-from linalg.bidiagonalization import lanczos_bidiag_reorth, make_bidiagonal
-from linalg.helpers import multiply_factorized
+from linalg.helpers import multiply_factorized, truncated_svd
 
 from test.case_matrix_ode import (
     generate_heat_equation,
@@ -25,14 +24,10 @@ class TestMatrixOde(unittest.TestCase):
 
         # generate case and start conditions
         A_0, A, A_dot = generate_heat_equation(n=m, m=m, k=k)
-        b = np.random.rand(m)
-        U_0, V_0, alpha, beta = lanczos_bidiag_reorth(A_0, k, b)
-        S_0 = make_bidiagonal(alpha, beta)
+        Y_0 = truncated_svd(A_0, k=k)
 
         # integrate
-        Y, T = matrix_ode_simple(
-            0, t_f, Y_0=(U_0, S_0, V_0), X=A_dot, TOL=1e-3, verbose=True
-        )
+        Y, T = matrix_ode_simple(0, t_f, Y_0=(Y_0), X=A_dot, TOL=1e-3, verbose=True)
         Y_mat = multiply_factorized(*Y[-1])
 
         # measure difference from last matrix
@@ -53,14 +48,10 @@ class TestMatrixOde(unittest.TestCase):
 
         # generate case and start conditions
         A_0, A, A_dot = generate_first_example(eps=eps)
-        b = np.random.rand(m)
-        U_0, V_0, alpha, beta = lanczos_bidiag_reorth(A_0, k, b)
-        S_0 = make_bidiagonal(alpha, beta)
+        Y_0 = truncated_svd(A_0, k)
 
         # integrate
-        Y, T = matrix_ode_simple(
-            0, t_f, Y_0=(U_0, S_0, V_0), X=A_dot, TOL=1e-4, verbose=True
-        )
+        Y, T = matrix_ode_simple(0, t_f, Y_0=Y_0, X=A_dot, TOL=1e-4, verbose=True)
         Y_mat = multiply_factorized(*Y[-1])
 
         # measure difference from last matrix
@@ -82,14 +73,10 @@ class TestMatrixOde(unittest.TestCase):
 
         # generate case and start conditions
         A_0, A, A_dot = generate_second_example(eps=eps)
-        b = np.random.rand(m)
-        U_0, V_0, alpha, beta = lanczos_bidiag_reorth(A_0, k, b)
-        S_0 = make_bidiagonal(alpha, beta)
+        Y_0 = truncated_svd(A_0, k)
 
         # integrate
-        Y, T = matrix_ode_simple(
-            0, t_f, Y_0=(U_0, S_0, V_0), X=A_dot, TOL=1e-4, verbose=True
-        )
+        Y, T = matrix_ode_simple(0, t_f, Y_0=Y_0, X=A_dot, TOL=1e-4, verbose=True)
         Y_mat = multiply_factorized(*Y[-1])
 
         # measure difference from last matrix

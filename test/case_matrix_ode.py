@@ -47,10 +47,10 @@ def generate_first_example(eps=1e-3):
     A_0 = A_1 + A_2
 
     def Q_1(t):
-        return sl.expm(T_1 * t)
+        return spl.expm(T_1 * t)
 
     def Q_2(t):
-        return sl.expm(T_2 * t)
+        return spl.expm(T_2 * t)
 
     def A(t):
         return Q_1(t) @ (A_1 + np.exp(t) * A_2) @ Q_2(t).T
@@ -79,10 +79,10 @@ def generate_second_example(eps=1e-1):
     A_0 = A_1 + A_2
 
     def Q_1(t):
-        return sl.expm(T_1 * t)
+        return spl.expm(T_1 * t)
 
     def Q_2(t):
-        return sl.expm(T_2 * t)
+        return spl.expm(T_2 * t)
 
     def A(t):
         return Q_1(t) @ (A_1 + np.cos(t) * A_2) @ Q_2(t).T
@@ -99,13 +99,6 @@ def generate_second_example(eps=1e-1):
         return d_one + d_two + d_tree
 
     return A_0, A, A_dot
-
-
-def raveldot(A: np.ndarray, x: np.ndarray):
-    m, n = x.shape
-    Ax_vec = A @ x.ravel()
-    Ax = Ax_vec.reshape(m, n)
-    return Ax
 
 
 def get_laplacian(n, boundary="periodic"):
